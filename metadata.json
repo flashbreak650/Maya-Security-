@@ -1,0 +1,8 @@
+{
+  "name": "Remix WAGuard - WhatsApp Bot \u0026 Group Admin Console",
+  "description": "WhatsApp Group Bot Manager with real Baileys pairing code connection, group management, AI moderation, and real-time activity logging.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

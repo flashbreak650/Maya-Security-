@@ -1,0 +1,19 @@
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+
+# WhatsApp Multi-Device session & encryption keys (MUST NOT BE COMMITTED TO GITHUB)
+wa_session/
+*.session
+
+# Local state, stats & runtime config
+waguard_stats.json
+waguard_kicks.json
+waguard_config.json
+!waguard_config.example.json
+*.local

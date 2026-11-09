@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WAGuard — Real WhatsApp Bot & Group Admin Console</title>
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Hind+Siliguri:wght@400;500;600;700&family=JetBrains+Mono:wght@600;700;800&display=swap');
+:root{
+ --green:#087f55;--green2:#10a36c;--mint:#e9f7ef;
+ --bg:#f5f7f6;--white:#fff;--ink:#1c3027;
+ --muted:#84938a;--line:#e9efeb;--red:#d94e50;
+ --orange:#e67700;--blue:#228be6;
+ --shadow:0 5px 25px rgba(23,52,37,.045);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,'Hind Siliguri',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+.shell{min-height:100vh}
+.header{height:70px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 25px;position:sticky;top:0;z-index:20}
+.brand{display:flex;align-items:center;gap:11px}
+.brandmark{height:40px;width:40px;border-radius:13px;background:linear-gradient(145deg,#13b47a,#08734d);color:white;display:grid;place-items:center;box-shadow:0 5px 13px #087f5525}
+.brandmark svg{width:23px}
+.brandname{font-size:20px;font-weight:800;letter-spacing:-.8px}
+.brandname span{color:var(--green)}
+.badge-live{background:#e6fcf5;color:#0ca678;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;border:1px solid #b2f2bb;margin-left:6px;display:inline-flex;align-items:center;gap:4px}
+.badge-live::before{content:"";width:6px;height:6px;border-radius:50%;background:#0ca678;animation:pulse 1.8s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.2)}}
+.header-right{display:flex;align-items:center;gap:12px}
+.server-indicator{display:inline-flex;align-items:center;gap:6px;font-size:11px;padding:6px 12px;background:#f3f8f5;border-radius:20px;border:1px solid var(--line);color:#4b6354;font-weight:600}
+.server-dot{width:8px;height:8px;border-radius:50%;background:#ccc}
+.server-dot.online{background:#10a36c;box-shadow:0 0 0 3px #10a36c25}
+.server-dot.offline{background:#e03131}
+.iconbutton{height:38px;width:38px;border:1px solid var(--line);border-radius:11px;background:white;color:#64766b;display:grid;place-items:center;transition:.2s}
+.iconbutton:hover{color:var(--green);border-color:#b2f2bb}
+.iconbutton svg{width:17px}
+.avatar{height:37px;width:37px;border-radius:50%;background:#e5f4eb;color:var(--green);display:grid;place-items:center;font-weight:800}
+.layout{display:flex;max-width:1500px;margin:auto;min-height:calc(100vh - 70px)}
+.sidebar{width:245px;flex-shrink:0;background:#fff;border-right:1px solid var(--line);padding:22px 14px;display:flex;flex-direction:column}
+.side-label{font-size:10px;font-weight:800;letter-spacing:1.2px;color:#a4afa8;padding:13px 12px}
+.nav{border:0;background:transparent;width:100%;display:flex;align-items:center;gap:12px;text-align:left;padding:12px;border-radius:11px;color:#718077;font-size:12px;font-weight:600;margin-bottom:4px;transition:.2s}
+.nav svg{width:18px;height:18px}
+.nav:hover{background:#f3f8f5;color:var(--green)}
+.nav.active{background:var(--mint);color:var(--green);font-weight:750}
+.nav .pill{margin-left:auto;font-size:10px;background:#e9f7ef;color:var(--green);padding:2px 7px;border-radius:10px;font-weight:700}
+.side-bottom{margin-top:auto;padding:15px;background:#f2f8f4;border-radius:15px}
+.side-bottom svg{color:var(--green);width:22px}
+.side-bottom strong{display:block;font-size:12px;margin:9px 0 5px}
+.side-bottom p{font-size:10px;color:var(--muted);line-height:1.7}
+.main{padding:28px;flex:1;min-width:0;max-width:1200px}
+.page{display:none;animation:appear .2s ease}
+.page.active{display:block}
+@keyframes appear{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:none}}
+.page-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:24px}
+.page-head h1{font-size:24px;font-weight:800;letter-spacing:-.7px}
+.page-head p{font-size:12px;color:var(--muted);margin-top:6px}
+.btn{border:0;border-radius:10px;padding:11px 16px;font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:.2s}
+.btn svg{width:16px;height:16px}
+.btn:active{transform:scale(.98)}
+.btn:disabled{opacity:.6;cursor:not-allowed}
+.primary{background:var(--green);color:white}
+.primary:hover:not(:disabled){background:#066c49}
+.soft{background:var(--mint);color:var(--green)}
+.soft:hover:not(:disabled){background:#d8f1e3}
+.outline{background:white;border:1px solid var(--line);color:#617168}
+.outline:hover:not(:disabled){background:#f8faf9;border-color:#cfddd4}
+.danger{background:#fff0ef;color:var(--red);border:1px solid #ffc9c9}
+.danger:hover:not(:disabled){background:#ffe3e3}
+.full{width:100%}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:var(--shadow);min-width:0;position:relative}
+.card-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:17px}
+.card-head h3{font-size:14px;font-weight:750}
+.card-head p{font-size:11px;color:var(--muted);margin-top:4px}
+.symbol{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;flex-shrink:0}
+.symbol svg{width:20px}
+.sg{background:#e9f7ef;color:#0b9360}
+.sb{background:#edf3ff;color:#527bd4}
+.so{background:#fff4e7;color:#dc9542}
+.sp{background:#f4efff;color:#8e65ca}
+.sr{background:#fff0ef;color:#d45d56}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:16px}
+.stat{background:white;border:1px solid var(--line);border-radius:15px;padding:18px;box-shadow:var(--shadow)}
+.stat-top{display:flex;justify-content:space-between;align-items:center}
+.stat small{font-size:11px;color:var(--muted);font-weight:600}
+.stat h2{font-size:28px;margin-top:12px;letter-spacing:-1px;font-weight:800}
+.stat p{font-size:11px;color:#9aa69f;margin-top:4px}
+.grid2{display:grid;grid-template-columns:1.25fr 1fr;gap:15px;margin-bottom:16px}
+.hero{background:linear-gradient(125deg,#0a3f2b,#0b9360);border-radius:17px;color:white;padding:24px;position:relative;overflow:hidden}
+.hero:after{content:"";position:absolute;width:200px;height:200px;border:1px solid #ffffff25;border-radius:50%;right:-65px;top:-70px;box-shadow:0 0 0 25px #ffffff0a,0 0 0 50px #ffffff05}
+.hero-content{position:relative;z-index:1}
+.hero h3{font-size:18px;font-weight:800}
+.hero p{font-size:12px;color:#d8efe2;margin-top:8px;line-height:1.7}
+.hero-status{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:30px;background:#ffffff1f;backdrop-filter:blur(4px);font-size:11px;font-weight:700;margin-top:16px}
+.dot{width:8px;height:8px;border-radius:50%;background:#c3d3ca}
+.dot.online{background:#40c057;box-shadow:0 0 0 3px #40c05740}
+.dot.connecting{background:#fcc419;box-shadow:0 0 0 3px #fcc41940}
+.hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.hero-actions .btn{background:white;color:#0b724c}
+.hero-actions .btn:hover{background:#f0faf4}
+.hero-actions .btn.alt{background:#ffffff22;color:white;border:1px solid #ffffff44}
+.hero-actions .btn.alt:hover{background:#ffffff33}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-group{min-width:0}
+.form-group.wide{grid-column:1/-1}
+.form-group label{font-size:12px;font-weight:700;display:block;margin-bottom:8px;color:#45564c}
+.fieldwrap{position:relative}
+.field{width:100%;height:45px;border:1px solid #dfe7e2;border-radius:10px;padding:0 14px;outline:none;font-size:13px;color:var(--ink);background:#fff;transition:.2s}
+.field:focus,textarea.field:focus{border-color:#16a36c;box-shadow:0 0 0 3px #16a36c15}
+.field.secret{padding-right:42px}
+.reveal{position:absolute;right:7px;top:7px;width:31px;height:31px;border:0;background:transparent;color:#829087;display:grid;place-items:center;border-radius:8px}
+.reveal:hover{background:#f1f5f3;color:#333}
+.reveal svg{width:16px}
+textarea.field{height:88px;padding:12px;resize:vertical}
+.hint{font-size:11px;color:var(--muted);line-height:1.6;margin-top:7px}
+.form-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:17px}
+.notice{padding:13px 15px;border:1px solid #fae8be;background:#fffbf2;color:#8f6d2b;border-radius:12px;font-size:11px;line-height:1.7;margin-top:14px}
+.info{padding:14px 16px;background:#eef8f2;color:#35674c;border-radius:12px;font-size:12px;line-height:1.7;margin-top:14px;border:1px solid #d2edd9}
+.status-tag{font-size:11px;font-weight:700;border-radius:20px;padding:5px 11px;background:#f0f3f1;color:#849088;display:inline-flex;align-items:center;gap:5px}
+.status-tag.good{background:#e9f7ef;color:#0ca678;border:1px solid #b2f2bb}
+.status-tag.warn{background:#fff9db;color:#f59f00;border:1px solid #ffe066}
+.status-tag.danger{background:#fff5f5;color:#fa5252;border:1px solid #ffc9c9}
+.setting-row{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:14px 0;border-bottom:1px solid #eff3f0}
+.setting-row:last-child{border:0}
+.setting-row strong{font-size:12px;display:block;color:#2c3e34}
+.setting-row small{font-size:11px;color:var(--muted);display:block;margin-top:4px;line-height:1.5}
+.switch{appearance:none;width:42px;height:24px;border-radius:30px;background:#d8e2dc;position:relative;flex-shrink:0;cursor:pointer;transition:.2s}
+.switch:before{content:"";position:absolute;left:3px;top:3px;width:18px;height:18px;border-radius:50%;background:white;box-shadow:0 1px 3px #0002;transition:.2s}
+.switch:checked{background:var(--green)}
+.switch:checked:before{left:21px}
+.item{display:flex;gap:12px;align-items:center;padding:13px 0;border-bottom:1px solid #eff3f0}
+.item:last-child{border:0}
+.item strong{font-size:12px;color:#22362b}
+.item small{display:block;font-size:11px;color:var(--muted);margin-top:3px}
+.item-time{margin-left:auto;font-size:10px;color:#9eb0a5;white-space:nowrap}
+.item-icon{width:36px;height:36px;border-radius:10px;background:#eef7f1;color:var(--green);display:grid;place-items:center;flex-shrink:0}
+.item-icon.warn{background:#fff9db;color:#f59f00}
+.item-icon.error{background:#fff5f5;color:#e03131}
+.item-icon svg{width:18px}
+.empty{text-align:center;padding:32px 16px;color:var(--muted);font-size:12px;line-height:1.8}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:500px}
+th{text-align:left;color:#8a9990;font-size:10px;font-weight:700;letter-spacing:.6px;padding:12px 14px;border-bottom:1px solid var(--line)}
+td{font-size:12px;padding:14px;border-bottom:1px solid #f1f5f2}
+tbody tr:hover{background:#fafcfb}
+
+/* Pairing code specific UI */
+.pair-box{background:linear-gradient(180deg,#f9fdfa,#f1f8f4);border:2px dashed #9fe0bd;border-radius:18px;padding:26px 20px;margin-top:20px;text-align:center;position:relative}
+.pair-code-display{font-family:'JetBrains Mono',monospace;font-size:38px;font-weight:800;letter-spacing:9px;color:#0b724c;margin:16px 0;display:inline-block;padding:8px 24px;background:#ffffff;border-radius:12px;border:1px solid #b2f2bb;box-shadow:0 4px 14px rgba(16,163,108,.08)}
+.pair-timer{font-size:11px;color:#6b8073;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:16px}
+.pair-steps{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;margin-top:20px;text-align:left}
+.pair-steps h4{font-size:13px;font-weight:750;margin-bottom:12px;color:#1e3529;display:flex;align-items:center;gap:8px}
+.step-item{display:flex;gap:12px;margin-bottom:10px;font-size:12px;line-height:1.6;color:#45594e}
+.step-item:last-child{margin-bottom:0}
+.step-num{width:22px;height:22px;border-radius:50%;background:#e5f4eb;color:var(--green);font-weight:800;font-size:11px;display:grid;place-items:center;flex-shrink:0}
+.spinner{width:16px;height:16px;border:2px solid #ffffff40;border-top-color:#fff;border-radius:50%;display:inline-block;animation:spin .7s linear infinite}
+.spinner.dark{border:2px solid #00000020;border-top-color:var(--green)}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.mobile-nav{display:none}
+.toast{position:fixed;z-index:99;bottom:25px;left:50%;transform:translateX(-50%);background:#183225;color:white;padding:12px 20px;border-radius:12px;font-size:12px;box-shadow:0 8px 30px rgba(0,0,0,.25);display:none;max-width:92%;text-align:center;font-weight:600;animation:pop .2s ease}
+@keyframes pop{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
+
+@media(max-width:950px){.sidebar{width:215px}.main{padding:22px 16px}.stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:650px){
+ .header{height:62px;padding:0 14px}.brandname{font-size:18px}
+ .sidebar{display:none}.layout{display:block}
+  .main{padding:18px 12px 160px}
+ .page-head h1{font-size:22px}
+ .stats{gap:10px}.stat{padding:14px}.stat h2{font-size:24px}
+ .grid2{grid-template-columns:1fr;gap:12px}
+ .card{padding:16px}
+ .form-grid{grid-template-columns:1fr}
+ .form-group.wide{grid-column:auto}
+ .pair-code-display{font-size:28px;letter-spacing:5px;padding:6px 14px}
+ .mobile-nav{position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:9px 2px calc(9px + env(safe-area-inset-bottom));z-index:30}
+ .mobile-nav button{flex:1;border:0;background:transparent;color:#87948c;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10px}
+ .mobile-nav svg{width:19px;height:19px}
+ .mobile-nav button.active{color:var(--green);font-weight:750}
+ .toast{bottom:85px}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+<header class="header">
+ <div class="brand">
+  <div class="brandmark"><i data-lucide="shield-check"></i></div>
+  <div class="brandname">WA<span>Guard</span></div>
+  <span class="badge-live">Real Baileys</span>
+ </div>
+ <div class="header-right">
+  <div class="server-indicator" id="topServerStatus">
+   <span class="server-dot" id="serverDot"></span>
+   <span id="serverLabel">Checking Server...</span>
+  </div>
+  <button class="iconbutton" onclick="refreshCurrent()" title="Refresh Data"><i data-lucide="refresh-cw"></i></button>
+  <div class="avatar" id="userAvatar">W</div>
+ </div>
+</header>
+
+<div class="layout">
+<aside class="sidebar">
+ <div class="side-label">MAIN MENU</div>
+ <button class="nav active" data-page="home" onclick="go('home')"><i data-lucide="layout-dashboard"></i> Overview</button>
+ <button class="nav" data-page="pairing" onclick="go('pairing')"><i data-lucide="smartphone"></i> WhatsApp Connect <span class="pill" id="navPairStatus">Offline</span></button>
+ <button class="nav" data-page="groups" onclick="go('groups')"><i data-lucide="users"></i> Group Management</button>
+ <button class="nav" data-page="integrations" onclick="go('integrations')"><i data-lucide="plug"></i> API & Integrations</button>
+ <div class="side-label">BOT CONTROL</div>
+ <button class="nav" data-page="ai" onclick="go('ai')"><i data-lucide="bot"></i> AI Personality</button>
+ <button class="nav" data-page="security" onclick="go('security')"><i data-lucide="shield-check"></i> Security Settings</button>
+ <button class="nav" data-page="webhook" onclick="go('webhook')"><i data-lucide="webhook"></i> Webhook Setup</button>
+ <button class="nav" data-page="logs" onclick="go('logs')"><i data-lucide="clipboard-list"></i> Activity Logs</button>
+ <div class="side-label">SYSTEM</div>
+ <button class="nav" data-page="general" onclick="go('general')"><i data-lucide="settings"></i> General Settings</button>
+ <div class="side-bottom">
+  <i data-lucide="shield-check"></i>
+  <strong>WAGuard Real Engine</strong>
+  <p>Baileys multi-device pairing & real-time WhatsApp group protection.</p>
+ </div>
+</aside>
+
+<main class="main">
+
+<!-- Page: Home Overview -->
+<section class="page active" id="home">
+ <div class="page-head">
+  <div><h1>Overview Dashboard</h1><p>Welcome to your WAGuard Real WhatsApp Bot control center.</p></div>
+  <button class="btn outline" onclick="loadDashboard()"><i data-lucide="refresh-cw"></i> Refresh</button>
+ </div>
+ <div class="stats">
+  <div class="stat"><div class="stat-top"><small>Messages Checked</small><div class="symbol sg"><i data-lucide="messages-square"></i></div></div><h2 id="messages">0</h2><p>Live messages analyzed</p></div>
+  <div class="stat"><div class="stat-top"><small>Warnings Issued</small><div class="symbol so"><i data-lucide="alert-triangle"></i></div></div><h2 id="warnings">0</h2><p>Moderation warnings</p></div>
+  <div class="stat"><div class="stat-top"><small>Blocked Words</small><div class="symbol sr"><i data-lucide="ban"></i></div></div><h2 id="blocked">0</h2><p>Offensive words caught</p></div>
+  <div class="stat"><div class="stat-top"><small>Connected Groups</small><div class="symbol sb"><i data-lucide="users"></i></div></div><h2 id="groupCount">0</h2><p>Active WhatsApp groups</p></div>
+ </div>
+ <div class="grid2">
+  <div class="hero">
+   <div class="hero-content">
+    <h3>WhatsApp Bot Connection</h3>
+    <p>Real Baileys multi-device socket engine running on your server. Generate pairing codes without any third-party URL configuration.</p>
+    <div class="hero-status"><span class="dot" id="heroDot"></span><span id="heroStatus">Connecting...</span></div>
+    <div class="hero-actions">
+     <button class="btn" onclick="go('pairing')"><i data-lucide="smartphone"></i> <span id="heroActionText">Connect WhatsApp</span></button>
+     <button class="btn alt" onclick="loadDashboard()"><i data-lucide="refresh-cw"></i> Check Status</button>
+     <button class="btn alt" id="heroDisconnectBtn" style="display:none;background:#ff6b6b33;border-color:#ff8787" onclick="disconnectWhatsApp()"><i data-lucide="log-out"></i> Disconnect</button>
+    </div>
+   </div>
+  </div>
+  <div class="card">
+   <div class="card-head"><div><h3>Quick Setup & Bot Status</h3><p>Real WhatsApp Web Session</p></div><div class="symbol sg"><i data-lucide="key-round"></i></div></div>
+   <div id="botInfoBox" class="info" style="margin-top:0">
+    <div style="font-weight:700;margin-bottom:4px">বিল্ট-ইন সার্ভার একটিভ:</div>
+    <div>কোনো বাহ্যিক Baileys URL ছাড়াই আপনার এই সার্ভার থেকেই রিয়েল ৮-ডিজিটের হোয়াটসঅ্যাপ পেয়ারিং কোড তৈরি হবে।</div>
+   </div>
+   <button class="btn primary full" style="margin-top:14px" onclick="go('pairing')"><i data-lucide="link"></i> Link Device via Pairing Code <i data-lucide="arrow-right"></i></button>
+  </div>
+ </div>
+ <div class="card">
+  <div class="card-head"><div><h3>Recent Activity</h3><p>Live events from WhatsApp socket and security engine</p></div><button class="btn soft" onclick="go('logs')">View all</button></div>
+  <div id="recentLogs"><div class="empty">No activity loaded yet.</div></div>
+ </div>
+</section>
+
+<!-- Page: WhatsApp Connect (Pairing Code) -->
+<section class="page" id="pairing">
+ <div class="page-head">
+  <div><h1>WhatsApp Connect</h1><p>Link your personal or business WhatsApp via real 8-digit pairing code.</p></div>
+  <button class="btn outline" onclick="loadDashboard()"><i data-lucide="refresh-cw"></i> Refresh</button>
+ </div>
+ 
+ <div class="card" style="max-width:620px;margin:auto">
+  <div style="text-align:center">
+   <div class="symbol sg" style="margin:5px auto 14px;width:64px;height:64px;border-radius:18px"><i data-lucide="smartphone" style="width:30px;height:30px"></i></div>
+   <h2 style="font-size:20px;font-weight:800">রিয়েল হোয়াটসঅ্যাপ পেয়ারিং কোড</h2>
+   <p class="hint" style="max-width:440px;margin:6px auto 0">দেশ কোড সহ আপনার হোয়াটসঅ্যাপ মোবাইল নম্বরটি লিখুন। কোনো Baileys URL দেওয়ার প্রয়োজন নেই, সার্ভার সরাসরি কোড দেবে।</p>
+  </div>
+
+  <div id="alreadyConnectedBanner" style="display:none;margin-top:20px" class="info">
+   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+    <div>
+     <strong style="color:#0ca678;display:flex;align-items:center;gap:6px"><i data-lucide="check-circle-2"></i> হোয়াটসঅ্যাপ ইতোমধ্যে সংযুক্ত আছে!</strong>
+     <div style="font-size:11px;color:#456353;margin-top:4px" id="connectedUserDetail">Device connected</div>
+    </div>
+    <button class="btn danger" onclick="disconnectWhatsApp()"><i data-lucide="log-out"></i> Disconnect</button>
+   </div>
+  </div>
+
+  <div id="pairingFormArea">
+   <div class="form-group" style="margin-top:20px">
+    <label for="pairPhone">হোয়াটসঅ্যাপ মোবাইল নম্বর (Country code সহ)</label>
+    <div class="fieldwrap">
+     <input class="field" id="pairPhone" placeholder="যেমন: 88017XXXXXXXX বা 88018XXXXXXXX" inputmode="numeric" autocomplete="tel">
+    </div>
+    <p class="hint">উদাহরণ: বাংলাদেশের জন্য <strong>8801712345678</strong> (কোনো + বা স্পেস ছাড়া বা দিয়ে লিখুন)।</p>
+   </div>
+
+   <button class="btn primary full" id="generateCodeBtn" style="margin-top:14px;height:46px" onclick="getRealPairing()">
+    <i data-lucide="key-round"></i> Generate Real Pairing Code
+   </button>
+  </div>
+
+  <!-- Real Pairing Code Display Box -->
+  <div id="pairResult" style="display:none" class="pair-box">
+   <span class="status-tag good" style="margin-bottom:8px"><i data-lucide="shield-check"></i> Official WhatsApp Pairing Code</span>
+   <div style="font-size:11px;font-weight:700;color:#2c4b3a;letter-spacing:1px">আপনার ৮-সংখ্যার রিয়েল পেয়ারিং কোড</div>
+   
+   <div class="pair-code-display" id="pairCode">----</div>
+   
+   <div class="pair-timer" id="pairTimer"><i data-lucide="clock"></i> <span>মেয়াদ: <b>60</b> সেকেন্ড</span></div>
+
+   <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+    <button class="btn soft" onclick="copyPair()"><i data-lucide="copy"></i> Copy Code</button>
+    <button class="btn outline" onclick="getRealPairing()"><i data-lucide="refresh-cw"></i> New Code</button>
+   </div>
+
+   <div class="pair-steps">
+    <h4><i data-lucide="help-circle"></i> হোয়াটসঅ্যাপে কোডটি যেভাবে প্রবেশ করাবেন:</h4>
+    <div class="step-item"><span class="step-num">1</span><span>আপনার ফোনে <b>WhatsApp</b> অ্যাপটি ওপেন করুন।</span></div>
+    <div class="step-item"><span class="step-num">2</span><span>ওপরের ডানপাশের ৩টি ডট (Menu) চাপুন এবং <b>Linked devices</b> (সংযুক্ত ডিভাইস) এ যান।</span></div>
+    <div class="step-item"><span class="step-num">3</span><span><b>Link a device</b> (ডিভাইস লিঙ্ক করুন) বাটনে ট্যাপ করুন।</span></div>
+    <div class="step-item"><span class="step-num">4</span><span>নিচে থাকা <b>"Link with phone number instead"</b> (ফোন নম্বর দিয়ে লিঙ্ক করুন) অপশনে চাপুন।</span></div>
+    <div class="step-item"><span class="step-num">5</span><span>ওপরে দেখানো ৮ ডিজিটের কোডটি (<b><span id="stepCodeRef">----</span></b>) লিখে সাবমিট করুন।</span></div>
+   </div>
+  </div>
+
+  <div class="notice" style="text-align:left;margin-top:18px">
+   <strong><i data-lucide="info"></i> ১০০% রিয়েল সার্ভার মোড:</strong> এই কোডটি লোকাল বা ফেক কোনো র‍্যান্ডম টেক্সট নয়। এটি সরাসরি ব্যাকএন্ড Baileys Socket থেকে WhatsApp Web Servers-এ রিকোয়েস্ট পাঠিয়ে আসল ৮-সংখ্যার পেয়ারিং কোড তৈরি করে।
+  </div>
+ </div>
+</section>
+
+<!-- Page: Group Management -->
+<section class="page" id="groups">
+ <div class="page-head">
+  <div><h1>Group Management</h1><p>View and manage all connected WhatsApp groups.</p></div>
+  <button class="btn primary" onclick="loadGroups()"><i data-lucide="refresh-cw"></i> Refresh Groups</button>
+ </div>
+ <div class="card">
+  <div class="card-head"><div><h3>Connected WhatsApp Groups</h3><p>Live groups retrieved from your connected bot session</p></div><div class="symbol sb"><i data-lucide="users"></i></div></div>
+  <div class="tablewrap">
+   <table>
+    <thead><tr><th>GROUP NAME</th><th>GROUP ID / JID</th><th>MEMBERS</th><th>STATUS</th></tr></thead>
+    <tbody id="groupList">
+     <tr><td colspan="4" class="empty">No groups loaded. Please link WhatsApp first.</td></tr>
+    </tbody>
+   </table>
+  </div>
+ </div>
+</section>
+
+<!-- Page: API & Integrations -->
+<section class="page" id="integrations">
+ <div class="page-head"><div><h1>API & Integrations</h1><p>Configure bot backend and external credentials.</p></div></div>
+
+ <div class="card" style="margin-bottom:15px">
+  <div class="card-head"><div><h3>Baileys Internal Engine</h3><p>Real multi-device WhatsApp backend running on this server</p></div><div class="symbol sb"><i data-lucide="server"></i></div></div>
+  <div class="info" style="margin-top:0">
+   <strong>সার্ভার স্ট্যাটাস:</strong> আপনার এই অ্যাপের ভেতর Baileys ব্যাকএন্ড সক্রিয় আছে। কোনো বাহ্যিক Baileys URL দেওয়ার প্রয়োজন নেই (ডিফল্ট রেখে দিলেই এটি নিজস্ব সার্ভার ব্যবহার করবে)।
+  </div>
+  <div class="form-group" style="margin-top:14px">
+   <label>Custom Baileys API Base URL (ঐচ্ছিক / Optional)</label>
+   <input class="field" id="baileysUrl" placeholder="খালি রাখুন নিজস্ব সার্ভার ব্যবহার করতে, অথবা https://your-custom-baileys.com দিন">
+   <p class="hint">ফাঁকা রাখলে সরাসরি বিল্ট-ইন Real Baileys Server কাজ করবে।</p>
+  </div>
+  <div class="form-actions">
+   <button class="btn primary" onclick="saveConfig('baileys')"><i data-lucide="save"></i> Save Server URL</button>
+   <button class="btn outline" onclick="testConnection('baileys')"><i data-lucide="activity"></i> Test Server</button>
+  </div>
+ </div>
+
+ <div class="card" style="margin-bottom:15px">
+  <div class="card-head"><div><h3>Google Gemini AI</h3><p>AI-powered message analysis and moderation</p></div><div class="symbol sp"><i data-lucide="sparkles"></i></div></div>
+  <div class="form-group">
+   <label>Gemini API Key</label>
+   <div class="fieldwrap"><input class="field secret" id="geminiApiKey" type="password" placeholder="Enter your Gemini API key"><button class="reveal" onclick="reveal('geminiApiKey',this)"><i data-lucide="eye"></i></button></div>
+   <p class="hint">Stored securely on your server for AI moderation.</p>
+  </div>
+  <div class="form-group" style="margin-top:15px">
+   <label>Gemini Model</label>
+   <select class="field" id="geminiModel">
+    <option value="gemini-3.8-flash">Gemini 3.8 Flash (Fast & Smart)</option>
+    <option value="gemini-4-argon">Gemini 4 Argon (Advanced Reasoning)</option>
+   </select>
+  </div>
+  <div class="form-actions">
+   <button class="btn primary" onclick="saveConfig('gemini')"><i data-lucide="save"></i> Save Gemini Settings</button>
+   <button class="btn outline" onclick="testConnection('gemini')"><i data-lucide="activity"></i> Test Gemini</button>
+  </div>
+ </div>
+
+ <div class="card">
+  <div class="card-head"><div><h3>WhatsApp Cloud API (Meta)</h3><p>Meta Official Cloud API (Optional)</p></div><div class="symbol sg"><i data-lucide="message-circle"></i></div></div>
+  <div class="form-grid">
+   <div class="form-group wide"><label>WhatsApp Access Token</label>
+    <div class="fieldwrap"><input class="field secret" id="waToken" type="password" placeholder="Paste access token"><button class="reveal" onclick="reveal('waToken',this)"><i data-lucide="eye"></i></button></div>
+   </div>
+   <div class="form-group"><label>Phone Number ID</label><input class="field" id="phoneId" placeholder="Meta Phone Number ID"></div>
+   <div class="form-group"><label>WhatsApp Business Account ID</label><input class="field" id="wabaId" placeholder="WABA ID"></div>
+   <div class="form-group"><label>Graph API Version</label><select class="field" id="graphVersion"><option value="v23.0">v23.0</option><option value="v22.0">v22.0</option></select></div>
+  </div>
+  <div class="form-actions">
+   <button class="btn primary" onclick="saveConfig('whatsapp')"><i data-lucide="save"></i> Save WhatsApp API</button>
+   <button class="btn outline" onclick="testConnection('whatsapp')"><i data-lucide="activity"></i> Test Meta API</button>
+  </div>
+ </div>
+</section>
+
+ <section class="page" id="ai">
+ <div class="page-head"><div><h1>AI Personality & Moderation</h1><p>Configure automated intelligence and bot character.</p></div></div>
+ <div class="card">
+  <div class="card-head"><div><h3>Bot Identity (মায়া)</h3><p>Manage bot personality and AI responses</p></div><div class="symbol sp"><i data-lucide="sparkles"></i></div></div>
+  <div class="setting-row"><div><strong>Enable Bot Personality</strong><small>বট নিজের ইচ্ছা মত মজার মজার রিপ্লাই দিবে</small></div><input class="switch" type="checkbox" data-setting="personalityEnabled" onchange="updateSetting(this)"></div>
+  <div class="setting-row"><div><strong>Enable AI Moderation</strong><small>Gemini AI দিয়ে মেসেজ বিশ্লেষণ করবে</small></div><input class="switch" type="checkbox" data-setting="aiModeration" onchange="updateSetting(this)"></div>
+  <div class="form-group" style="margin-top:14px">
+   <label>Bot Name (বটের নাম)</label>
+   <input class="field" id="botName" placeholder="যেমন: মায়া" value="মায়া">
+  </div>
+  <div class="form-group" style="margin-top:14px"><label>Custom AI Instructions</label><textarea class="field" id="aiPrompt" placeholder="বটকে কীভাবে কথা বলতে হবে তা এখানে লিখুন..."></textarea></div>
+  <button class="btn primary full" style="margin-top:13px" onclick="saveConfig('ai')"><i data-lucide="save"></i> Save Identity & AI Settings</button>
+ </div>
+</section>
+
+<!-- Page: Security Settings -->
+<section class="page" id="security">
+ <div class="page-head"><div><h1>Security Settings</h1><p>Configure automated defense rules for WhatsApp groups.</p></div></div>
+ <div class="card">
+  <div class="card-head"><div><h3>Group Defense Rules</h3><p>Enforced automatically by the bot</p></div><div class="symbol sg"><i data-lucide="shield-check"></i></div></div>
+  <div class="setting-row"><div><strong>Anti Bad Words</strong><small>গালি শনাক্ত করবে</small></div><input class="switch" type="checkbox" data-setting="antiBadWords" onchange="updateSetting(this)"></div>
+  <div class="setting-row"><div><strong>Auto Kick Slurs (গালি দিলে রিমুভ)</strong><small>কাউকে গালি দিলে সরাসরি গ্রুপ থেকে বের করে দিবে</small></div><input class="switch" type="checkbox" data-setting="autoKickSlurs" onchange="updateSetting(this)"></div>
+  <div class="setting-row"><div><strong>Anti Sticker (স্টিকার রিমুভ)</strong><small>গ্রুপে স্টিকার দিলে স্বয়ংক্রিয়ভাবে ডিলিট করবে</small></div><input class="switch" type="checkbox" data-setting="antiSticker" onchange="updateSetting(this)"></div>
+  <div class="setting-row"><div><strong>Anti Link</strong><small>লিঙ্ক শেয়ার রোধ করবে</small></div><input class="switch" type="checkbox" data-setting="antiLink" onchange="updateSetting(this)"></div>
+  <div class="setting-row"><div><strong>Auto Warning</strong><small>সতর্কবার্তা পাঠাবে</small></div><input class="switch" type="checkbox" data-setting="autoWarning" onchange="updateSetting(this)"></div>
+  <div class="setting-row"><div><strong>Auto Delete</strong><small>মেসেজ ডিলিট করবে</small></div><input class="switch" type="checkbox" data-setting="autoDelete" onchange="updateSetting(this)"></div>
+  <div class="setting-row"><div><strong>Admin Protection</strong><small>অ্যাডমিনদের ছাড় দিবে</small></div><input class="switch" type="checkbox" data-setting="adminProtection" onchange="updateSetting(this)"></div>
+  <div class="setting-row"><div><strong>Anti Flood</strong><small>দ্রুত মেসেজ পাঠানো আটকাবে</small></div><input class="switch" type="checkbox" data-setting="antiFlood" onchange="updateSetting(this)"></div>
+  <button class="btn soft full" style="margin-top:15px" onclick="loadDashboard()">Sync Settings</button>
+ </div>
+</section>
+
+<!-- Page: Webhook Setup -->
+<section class="page" id="webhook">
+ <div class="page-head"><div><h1>Webhook Setup</h1><p>Configure webhook verification and event delivery.</p></div></div>
+ <div class="card">
+  <div class="card-head"><div><h3>Meta Webhook Configuration</h3><p>For WhatsApp Cloud API callbacks</p></div><div class="symbol sb"><i data-lucide="webhook"></i></div></div>
+  <div class="form-group"><label>Callback URL</label><input class="field" id="webhookUrl" placeholder="https://your-domain.com/webhook"></div>
+  <div class="form-group" style="margin-top:14px"><label>Verify Token</label><div class="fieldwrap"><input class="field secret" id="verifyToken" type="password" placeholder="Your custom verify token"><button class="reveal" onclick="reveal('verifyToken',this)"><i data-lucide="eye"></i></button></div></div>
+  <div class="notice">The built-in Baileys bot communicates through WhatsApp Web sockets directly without needing public webhook endpoints.</div>
+  <button class="btn primary full" style="margin-top:15px" onclick="saveConfig('webhook')"><i data-lucide="save"></i> Save Webhook Settings</button>
+ </div>
+</section>
+
+<!-- Page: Activity Logs -->
+<section class="page" id="logs">
+ <div class="page-head">
+  <div><h1>Activity Logs</h1><p>Real-time audit log of socket events, pairing requests, and moderation actions.</p></div>
+  <button class="btn primary" onclick="loadLogs()"><i data-lucide="refresh-cw"></i> Refresh Logs</button>
+ </div>
+ <div class="card">
+  <div class="card-head"><div><h3>Audit Trail</h3><p>Recorded by WAGuard backend</p></div><div class="symbol sb"><i data-lucide="clipboard-list"></i></div></div>
+  <div id="logList"><div class="empty">No logs loaded yet.</div></div>
+ </div>
+</section>
+
+<!-- Page: General Settings -->
+<section class="page" id="general">
+ <div class="page-head"><div><h1>General Settings</h1><p>Manage your dashboard preferences.</p></div></div>
+ <div class="card">
+  <div class="card-head"><div><h3>Console Preferences</h3><p>Local display & session controls</p></div><div class="symbol sb"><i data-lucide="sliders-horizontal"></i></div></div>
+  <div class="setting-row"><div><strong>Confirm Before Disconnect</strong><small>Ask for confirmation before terminating bot session</small></div><input class="switch" id="confirmDisconnect" type="checkbox" checked></div>
+  <div class="setting-row"><div><strong>Auto-refresh Dashboard</strong><small>Poll stats every 8 seconds</small></div><input class="switch" id="autoRefresh" type="checkbox" checked onchange="toggleAutoRefresh(this.checked)"></div>
+  <div class="form-actions" style="margin-top:20px">
+   <button class="btn danger" onclick="disconnectWhatsApp()"><i data-lucide="log-out"></i> Disconnect WhatsApp Session</button>
+   <button class="btn soft" onclick="clearLocal()">Reset Local Dashboard Cache</button>
+  </div>
+ </div>
+</section>
+
+</main>
+</div>
+
+<nav class="mobile-nav">
+ <button class="active" data-page="home" onclick="go('home')"><i data-lucide="layout-dashboard"></i><span>Home</span></button>
+ <button data-page="pairing" onclick="go('pairing')"><i data-lucide="smartphone"></i><span>Connect</span></button>
+ <button data-page="groups" onclick="go('groups')"><i data-lucide="users"></i><span>Groups</span></button>
+ <button data-page="security" onclick="go('security')"><i data-lucide="shield-check"></i><span>Security</span></button>
+ <button data-page="logs" onclick="go('logs')"><i data-lucide="clipboard-list"></i><span>Logs</span></button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+lucide.createIcons();
+
+// API Configuration: If empty, uses the built-in server (relative root '').
+let API = (localStorage.getItem('wg_server') || '').trim().replace(/\/+$/, '');
+let currentPairCode = '';
+let pairCountdownTimer = null;
+let pairPollInterval = null;
+let dashboardPollInterval = null;
+
+function toast(msg) {
+ const t = document.getElementById('toast');
+ t.textContent = msg;
+ t.style.display = 'block';
+ clearTimeout(window.toastTimer);
+ window.toastTimer = setTimeout(() => { t.style.display = 'none'; }, 3200);
+}
+
+function go(id) {
+ const target = document.getElementById(id);
+ if (!target) { toast('Page not found'); return; }
+ document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+ target.classList.add('active');
+ document.querySelectorAll('[data-page]').forEach(b => b.classList.toggle('active', b.dataset.page === id));
+ window.scrollTo({ top: 0, behavior: 'smooth' });
+ if (id === 'groups') loadGroups();
+ if (id === 'logs') loadLogs();
+}
+
+function reveal(id, button) {
+ const input = document.getElementById(id);
+ input.type = input.type === 'password' ? 'text' : 'password';
+ button.innerHTML = input.type === 'password' ? '<i data-lucide="eye"></i>' : '<i data-lucide="eye-off"></i>';
+ lucide.createIcons();
+}
+
+function esc(v) {
+ return String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+// Unified API call function: works with local origin '' or external custom URL
+async function call(path, method = 'GET', body) {
+ const base = API || '';
+ const options = {
+  method,
+  headers: { 'Content-Type': 'application/json' }
+ };
+ if (body !== undefined) options.body = JSON.stringify(body);
+ 
+ const res = await fetch(base + path, options);
+ const json = await res.json().catch(() => ({}));
+ if (!res.ok) {
+  throw Error(json.message || `Server Error (${res.status})`);
+ }
+ return json;
+}
+
+// Check server status & load overview
+async function loadDashboard() {
+ try {
+  const d = await call('/api/dashboard');
+  const online = d.connection?.online === true;
+  const status = d.connection?.status || (online ? 'connected' : 'disconnected');
+  
+  // Update header server dot
+  const dot = document.getElementById('serverDot');
+  const label = document.getElementById('serverLabel');
+  dot.className = 'server-dot ' + (online ? 'online' : 'offline');
+  label.textContent = online ? 'WhatsApp: Connected' : 'Server Active (Bot Offline)';
+
+  // Update hero status
+  const heroStatus = document.getElementById('heroStatus');
+  const heroDot = document.getElementById('heroDot');
+  const navPair = document.getElementById('navPairStatus');
+  const heroActionText = document.getElementById('heroActionText');
+  const heroDisconnectBtn = document.getElementById('heroDisconnectBtn');
+
+  if (online) {
+   heroStatus.textContent = `Connected (${d.connection?.user?.id || 'Active Bot'})`;
+   heroDot.className = 'dot online';
+   navPair.textContent = 'Active';
+   navPair.style.background = '#e9f7ef';
+   navPair.style.color = '#0ca678';
+   heroActionText.textContent = 'Manage Bot';
+   heroDisconnectBtn.style.display = 'inline-flex';
+   
+   // In pairing page
+   document.getElementById('alreadyConnectedBanner').style.display = 'block';
+   document.getElementById('connectedUserDetail').textContent = `Connected Number: ${d.connection?.user?.id || 'Device'}`;
+   document.getElementById('pairingFormArea').style.display = 'none';
+   document.getElementById('pairResult').style.display = 'none';
+  } else {
+   heroStatus.textContent = status === 'connecting' ? 'Connecting to WhatsApp...' : 'Not Connected';
+   heroDot.className = status === 'connecting' ? 'dot connecting' : 'dot';
+   navPair.textContent = status === 'connecting' ? 'Connecting' : 'Offline';
+   navPair.style.background = '#f1f3f2';
+   navPair.style.color = '#86938a';
+   heroActionText.textContent = 'Connect WhatsApp';
+   heroDisconnectBtn.style.display = 'none';
+   
+   document.getElementById('alreadyConnectedBanner').style.display = 'none';
+   document.getElementById('pairingFormArea').style.display = 'block';
+  }
+
+  // Update counts
+  document.getElementById('messages').textContent = d.overview?.messagesChecked ?? '0';
+  document.getElementById('warnings').textContent = d.overview?.warnings ?? '0';
+  document.getElementById('blocked').textContent = d.overview?.blockedWords ?? '0';
+  document.getElementById('groupCount').textContent = d.overview?.groups ?? '0';
+
+  // Update settings switches if present
+  if (d.settings) {
+   document.querySelectorAll('[data-setting]').forEach(el => {
+    if (typeof d.settings[el.dataset.setting] === 'boolean') {
+     el.checked = d.settings[el.dataset.setting];
+    }
+   });
+  }
+  if (d.config) {
+   if (d.config.botName) document.getElementById('botName').value = d.config.botName;
+   if (d.config.aiPrompt) document.getElementById('aiPrompt').value = d.config.aiPrompt;
+   if (d.config.geminiApiKey) document.getElementById('geminiApiKey').value = d.config.geminiApiKey;
+   if (d.config.geminiModel) document.getElementById('geminiModel').value = d.config.geminiModel;
+   if (d.config.waToken) document.getElementById('waToken').value = d.config.waToken;
+   if (d.config.phoneId) document.getElementById('phoneId').value = d.config.phoneId;
+   if (d.config.wabaId) document.getElementById('wabaId').value = d.config.wabaId;
+   if (d.config.graphVersion) document.getElementById('graphVersion').value = d.config.graphVersion;
+  }
+
+  // Quick logs in dashboard
+  loadRecentLogs();
+ } catch (err) {
+  document.getElementById('serverDot').className = 'server-dot offline';
+  document.getElementById('serverLabel').textContent = 'Server Unavailable';
+  document.getElementById('heroStatus').textContent = 'Disconnected';
+  console.warn('Dashboard sync issue:', err.message);
+ }
+}
+
+// REAL WhatsApp Pairing Code Generation (No local fake generator!)
+async function getRealPairing() {
+ const phoneInput = document.getElementById('pairPhone');
+ const rawPhone = phoneInput.value.trim();
+ const cleanPhone = rawPhone.replace(/\D/g, '');
+
+ if (cleanPhone.length < 9) {
+  toast('সঠিক হোয়াটসঅ্যাপ নম্বর দিন (কমপক্ষে ৯-১৫ ডিজিট)');
+  phoneInput.focus();
+  return;
+ }
+
+ const btn = document.getElementById('generateCodeBtn');
+ const originalBtnHtml = btn.innerHTML;
+ btn.disabled = true;
+ btn.innerHTML = '<span class="spinner"></span> WhatsApp সার্ভার থেকে কোড আনা হচ্ছে...';
+
+ try {
+  const result = await call('/api/whatsapp/pair', 'POST', { phoneNumber: cleanPhone });
+
+  if (result.alreadyConnected) {
+   toast(result.message || 'হোয়াটসঅ্যাপ ইতোমধ্যে কানেক্টেড আছে!');
+   loadDashboard();
+   return;
+  }
+
+  currentPairCode = result.pairingCode || result.rawCode;
+  if (!currentPairCode) {
+   throw Error('No pairing code returned by WhatsApp server.');
+  }
+
+  document.getElementById('pairCode').textContent = currentPairCode;
+  document.getElementById('stepCodeRef').textContent = currentPairCode;
+  document.getElementById('pairResult').style.display = 'block';
+
+  // Start 60 second countdown
+  startPairCountdown(60);
+
+  // Poll for connection success
+  startPairingPoll();
+
+  toast('রিয়েল হোয়াটসঅ্যাপ পেয়ারিং কোড তৈরি হয়েছে!');
+  lucide.createIcons();
+ } catch (err) {
+  toast('কোড তৈরিতে সমস্যা: ' + err.message);
+ } finally {
+  btn.disabled = false;
+  btn.innerHTML = originalBtnHtml;
+  lucide.createIcons();
+ }
+}
+
+function startPairCountdown(seconds) {
+ clearInterval(pairCountdownTimer);
+ let timeLeft = seconds;
+ const timerEl = document.getElementById('pairTimer');
+ timerEl.innerHTML = `<i data-lucide="clock"></i> <span>মেয়াদ: <b>${timeLeft}</b> সেকেন্ড</span>`;
+ lucide.createIcons();
+
+ pairCountdownTimer = setInterval(() => {
+  timeLeft--;
+  if (timeLeft <= 0) {
+   clearInterval(pairCountdownTimer);
+   timerEl.innerHTML = `<span style="color:var(--red)"><i data-lucide="alert-circle"></i> কোডের মেয়াদ শেষ। নতুন কোড নিন।</span>`;
+   lucide.createIcons();
+  } else {
+   timerEl.innerHTML = `<i data-lucide="clock"></i> <span>মেয়াদ: <b>${timeLeft}</b> সেকেন্ড</span>`;
+   lucide.createIcons();
+  }
+ }, 1000);
+}
+
+// Poll every 3 seconds to check if phone entered the code & connected
+function startPairingPoll() {
+ clearInterval(pairPollInterval);
+ let count = 0;
+ pairPollInterval = setInterval(async () => {
+  count++;
+  if (count > 25) { // Stop after ~75 seconds
+   clearInterval(pairPollInterval);
+   return;
+  }
+  try {
+   const d = await call('/api/dashboard');
+   if (d.connection?.online === true) {
+    clearInterval(pairPollInterval);
+    clearInterval(pairCountdownTimer);
+    toast('অভিনন্দন! হোয়াটসঅ্যাপ সফলভাবে কানেক্ট হয়েছে!');
+    loadDashboard();
+    go('home');
+   }
+  } catch (_) {}
+ }, 3000);
+}
+
+function copyPair() {
+ if (!currentPairCode) return;
+ const codeOnly = currentPairCode.replace('-', '');
+ navigator.clipboard?.writeText(codeOnly)
+  .then(() => toast(`কোড ${currentPairCode} কপি হয়েছে!`))
+  .catch(() => {
+   // Fallback copy
+   const input = document.createElement('input');
+   input.value = codeOnly;
+   document.body.appendChild(input);
+   input.select();
+   document.execCommand('copy');
+   document.body.removeChild(input);
+   toast('Code copied!');
+  });
+}
+
+async function disconnectWhatsApp() {
+ const shouldConfirm = document.getElementById('confirmDisconnect')?.checked ?? true;
+ if (shouldConfirm && !confirm('আপনি কি নিশ্চিত যে হোয়াটসঅ্যাপ ডিসকানেক্ট করতে চান?')) return;
+
+ try {
+  await call('/api/whatsapp/disconnect', 'POST', {});
+  toast('হোয়াটসঅ্যাপ ডিসকানেক্ট করা হয়েছে।');
+  currentPairCode = '';
+  document.getElementById('pairResult').style.display = 'none';
+  loadDashboard();
+ } catch (e) {
+  toast('Disconnect failed: ' + e.message);
+ }
+}
+
+async function loadGroups() {
+ const tbody = document.getElementById('groupList');
+ tbody.innerHTML = `<tr><td colspan="4" class="empty"><span class="spinner dark"></span> গ্রুপের তথ্য আনা হচ্ছে...</td></tr>`;
+ 
+ try {
+  const d = await call('/api/groups');
+  const groups = d.groups || [];
+  if (!groups.length) {
+   tbody.innerHTML = `<tr><td colspan="4" class="empty">কোনো গ্রুপ পাওয়া যায়নি। হোয়াটসঅ্যাপ কানেক্ট করুন অথবা বটে গ্রুপ যোগ করুন।</td></tr>`;
+   return;
+  }
+  tbody.innerHTML = groups.map(g => `
+   <tr>
+    <td><strong>${esc(g.name || 'WhatsApp Group')}</strong></td>
+    <td><code style="font-size:11px;color:#718077">${esc(g.id || 'N/A')}</code></td>
+    <td><b>${Number(g.participants || 0)}</b> members</td>
+    <td><span class="status-tag good"><i data-lucide="check"></i> Connected</span></td>
+   </tr>
+  `).join('');
+  lucide.createIcons();
+  toast(`${groups.length}টি গ্রুপ লোড হয়েছে`);
+ } catch (e) {
+  tbody.innerHTML = `<tr><td colspan="4" class="empty" style="color:var(--red)">গ্রুপ লোড ব্যর্থ: ${esc(e.message)}</td></tr>`;
+ }
+}
+
+async function loadLogs() {
+ const list = document.getElementById('logList');
+ list.innerHTML = `<div class="empty"><span class="spinner dark"></span> Logs লোড হচ্ছে...</div>`;
+
+ try {
+  const d = await call('/api/logs');
+  const logs = d.logs || [];
+  if (!logs.length) {
+   list.innerHTML = `<div class="empty">কোনো লগ পাওয়া যায়নি।</div>`;
+   return;
+  }
+  list.innerHTML = logs.map(l => {
+   const icon = l.level === 'error' ? 'alert-octagon' : (l.level === 'warn' ? 'alert-triangle' : (l.level === 'success' ? 'check-circle' : 'activity'));
+   const iconClass = l.level === 'error' ? 'item-icon error' : (l.level === 'warn' ? 'item-icon warn' : 'item-icon');
+   return `
+    <div class="item">
+     <div class="${iconClass}"><i data-lucide="${icon}"></i></div>
+     <div style="flex:1;min-width:0">
+      <strong>${esc(l.action)}</strong>
+      <small>${esc(l.message)}</small>
+     </div>
+     <div class="item-time">${esc(l.timestamp || '')}</div>
+    </div>
+   `;
+  }).join('');
+  lucide.createIcons();
+ } catch (e) {
+  list.innerHTML = `<div class="empty" style="color:var(--red)">Logs লোড ব্যর্থ: ${esc(e.message)}</div>`;
+ }
+}
+
+async function loadRecentLogs() {
+ try {
+  const d = await call('/api/logs');
+  const logs = (d.logs || []).slice(0, 4);
+  const container = document.getElementById('recentLogs');
+  if (!logs.length) {
+   container.innerHTML = `<div class="empty">No recent logs</div>`;
+   return;
+  }
+  container.innerHTML = logs.map(l => `
+   <div class="item">
+    <div class="item-icon"><i data-lucide="activity"></i></div>
+    <div style="flex:1;min-width:0">
+     <strong>${esc(l.action)}</strong>
+     <small>${esc(l.message)}</small>
+    </div>
+    <div class="item-time">${esc(l.timestamp || '')}</div>
+   </div>
+  `).join('');
+  lucide.createIcons();
+ } catch (_) {}
+}
+
+async function updateSetting(el) {
+ const key = el.dataset.setting;
+ const val = el.checked;
+ try {
+  await call('/api/settings', 'PUT', { [key]: val });
+  toast('Setting সংরক্ষিত হয়েছে');
+ } catch (e) {
+  el.checked = !val;
+  toast('Setting সংরক্ষণে ব্যর্থ: ' + e.message);
+ }
+}
+
+async function saveConfig(section) {
+ const data = {};
+ if (section === 'baileys') {
+  const customUrl = document.getElementById('baileysUrl').value.trim().replace(/\/+$/, '');
+  API = customUrl;
+  localStorage.setItem('wg_server', API);
+  data.baseUrl = API;
+ } else if (section === 'gemini') {
+  data.geminiApiKey = document.getElementById('geminiApiKey').value;
+  data.geminiModel = document.getElementById('geminiModel').value;
+ } else if (section === 'whatsapp') {
+  data.accessToken = document.getElementById('waToken').value;
+  data.phoneNumberId = document.getElementById('phoneId').value.trim();
+  data.wabaId = document.getElementById('wabaId').value.trim();
+  data.graphVersion = document.getElementById('graphVersion').value;
+ } else if (section === 'ai') {
+  data.aiPrompt = document.getElementById('aiPrompt').value;
+  data.botName = document.getElementById('botName').value;
+ } else if (section === 'webhook') {
+  data.callbackUrl = document.getElementById('webhookUrl').value.trim();
+  data.verifyToken = document.getElementById('verifyToken').value;
+ }
+
+ try {
+  await call('/api/config/' + section, 'PUT', data);
+  toast(`${section.toUpperCase()} সেটিংস সফলভাবে সেভ হয়েছে!`);
+  loadDashboard();
+ } catch (e) {
+  toast('সেভ ব্যর্থ: ' + e.message);
+ }
+}
+
+async function testConnection(section) {
+ try {
+  const res = await call('/api/config/' + section + '/test', 'POST', {});
+  toast(res.message || 'Connection test successful');
+ } catch (e) {
+  toast('Test error: ' + e.message);
+ }
+}
+
+function refreshCurrent() {
+ const active = document.querySelector('.page.active')?.id;
+ if (active === 'groups') loadGroups();
+ else if (active === 'logs') loadLogs();
+ else loadDashboard();
+}
+
+function clearLocal() {
+ if (!confirm('Local preferences মুছে ফেলতে চান?')) return;
+ localStorage.removeItem('wg_server');
+ API = '';
+ document.getElementById('baileysUrl').value = '';
+ toast('Local cache cleared. Using built-in server.');
+ loadDashboard();
+}
+
+function toggleAutoRefresh(enable) {
+ clearInterval(dashboardPollInterval);
+ if (enable) {
+  dashboardPollInterval = setInterval(loadDashboard, 8000);
+ }
+}
+
+// Initial boot
+document.getElementById('baileysUrl').value = API;
+loadDashboard();
+toggleAutoRefresh(true);
+</script>
+</body>
+</html>
